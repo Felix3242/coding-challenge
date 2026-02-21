@@ -3,6 +3,8 @@ import json
 from openai import OpenAI
 from typing import Dict, Any
 
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
 def generate_challenge_with_ai(difficulty: str) -> Dict[str, Any]:
     system_prompt = """You are an expert coding challenge creator. 
     Your task is to generate a coding question with multiple choice answers.
