@@ -32,12 +32,19 @@ async def generate_challenge(request: ChallengeRequest, db: Session = Depends(ge
             create_challenge_quota(db, user_id)
 
         quota = reset_quota_if_needed(db, quota)
+
+        if quota.quota_remaining <= 0:
+            raise HTTPException(status_code=429, detail="Quota exhausted")
         
+        challenge_data = None
 
+        quota.quota_remaining -= 1
+        db.commit()
 
+        return challenge_data
 
     except Exception as e:
-        pass
+        raise HTTPException(status_code=400, detail=str(e))
 
 @router.get("/my-history")
 async def my_history(request: Request, db:Session = Depends(get_db)):
