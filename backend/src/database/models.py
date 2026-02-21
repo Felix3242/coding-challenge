@@ -16,7 +16,7 @@ class Challenge(Base):
     title = Column(String, nullable=False)
     options = Column(String, nullable=False)
     correct_answer_id = Column(Integer, nullable=False)
-    explanation = Column(String, nullable=false)
+    explanation = Column(String, nullable=False)
 
 class ChallengeQuota(Base):
     __tablename__ = 'challenge_quotas'
