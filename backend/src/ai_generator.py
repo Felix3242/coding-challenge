@@ -2,6 +2,9 @@ import os
 import json
 from openai import OpenAI
 from typing import Dict, Any
+from dotenv import load_dotenv
+
+load_dotenv()
 
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
@@ -37,6 +40,8 @@ def generate_challenge_with_ai(difficulty: str) -> Dict[str, Any]:
         )
 
         content = response.choices[0].message.content
+        if content is None:
+            raise ValueError("Empty response from model")
         challenge_data = json.loads(content)
 
         required_fields = ["title", "options", "correct_answer_id", "explanation"]

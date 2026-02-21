@@ -1,4 +1,3 @@
-from backend.src.ai_generator import generate_challenge_with_ai
 from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
@@ -15,6 +14,7 @@ from ..utils import authenticate_and_get_user_details
 from ..database.models import get_db
 import json
 from datetime import datetime
+from typing import cast
 
 router = APIRouter()
 
@@ -29,6 +29,8 @@ async def generate_challenge(request: ChallengeRequest, db: Session = Depends(ge
     try:
         user_details = authenticate_and_get_user_details(request)
         user_id = user_details.get("user_id")
+        if not user_id or not isinstance(user_id, str):
+            raise HTTPException(status_code=401, detail="Invalid token")
 
         quota = get_challenge_quota(db, user_id)
         if not quota:
@@ -36,7 +38,7 @@ async def generate_challenge(request: ChallengeRequest, db: Session = Depends(ge
 
         quota = reset_quota_if_needed(db, quota)
 
-        if quota.quota_remaining <= 0:
+        if cast(int, quota.quota_remaining) <= 0:
             raise HTTPException(status_code=429, detail="Quota exhausted")
         
         challenge_data = generate_challenge_with_ai(request.difficulty)
@@ -48,14 +50,14 @@ async def generate_challenge(request: ChallengeRequest, db: Session = Depends(ge
             **challenge_data
         )
 
-        quota.quota_remaining -= 1
+        setattr(quota, "quota_remaining", cast(int, quota.quota_remaining) - 1)
         db.commit()
 
         return {
             "id": new_challenge.id,
             "difficulty": request.difficulty,
             "title": new_challenge.title,
-            "options": json.loads(new_challenge.options),
+            "options": json.loads(cast(str, new_challenge.options)),
             "correct_answer_id": new_challenge.correct_answer_id,
             "explanation": new_challenge.explanation,
             "timestamp": new_challenge.date_created.isoformat()
@@ -68,6 +70,8 @@ async def generate_challenge(request: ChallengeRequest, db: Session = Depends(ge
 async def my_history(request: Request, db:Session = Depends(get_db)):
     user_details = authenticate_and_get_user_details(request)
     user_id = user_details.get("user_id")
+    if not user_id or not isinstance(user_id, str):
+        raise HTTPException(status_code=401, detail="Invalid token")
 
     challenges = get_user_challenges(db, user_id)
     return {"challenges": challenges}
@@ -77,6 +81,8 @@ async def my_history(request: Request, db:Session = Depends(get_db)):
 async def get_quota(request: Request, db: Session = Depends(get_db)):
     user_details = authenticate_and_get_user_details(request)
     user_id = user_details.get("user_id")
+    if not user_id or not isinstance(user_id, str):
+        raise HTTPException(status_code=401, detail="Invalid token")
 
     quota = get_challenge_quota(db, user_id)
     if not quota:
