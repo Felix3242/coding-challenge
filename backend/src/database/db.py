@@ -7,7 +7,7 @@ def get_challenge_quota(db: Session, user_id: str):
             .filter(models.ChallengeQuota.user_id == user_id)
             .first())
 
-def create_challenge_qutoa(db: Session, user_id: str):
+def create_challenge_quota(db: Session, user_id: str):
     db_quota = models.ChallengeQuota(user_id = user_id)
     db.add(db_quota)
     db.commit()
@@ -44,5 +44,6 @@ def create_challenge(
     db.refresh(db_challenge)
     return db_challenge
 
-
+def get_user_challenges(db: Session, user_id: str):
+    return db.query(models.Challenge).filter(models.Challenge.created_by == user_id).all()
 
