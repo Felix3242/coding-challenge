@@ -1,18 +1,39 @@
 import 'react'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useApi } from '../utils/api'
 
 export function MCQChallenge({challenge, showExplanation=false}) {
   const [selectedOption, setSelectedOption] = useState(null)
   const [shouldShowExplanation, setShouldShowExplanation] = useState(showExplanation)
+  const {makeRequest} = useApi()
+
+  // Reset state when challenge changes
+  useEffect(() => {
+    setSelectedOption(null)
+    setShouldShowExplanation(showExplanation)
+  }, [challenge?.id, showExplanation])
 
   const options = typeof challenge.options === "string"
     ? JSON.parse(challenge.options)
     : challenge.options
 
-  const handleOptionSelect = (index) => {
+  const handleOptionSelect = async (index) => {
     if (selectedOption !== null) return;
     setSelectedOption(index)
     setShouldShowExplanation(true)
+    
+    // Submit answer to backend
+    try {
+      await makeRequest("submit-answer", {
+        method: "POST",
+        body: JSON.stringify({
+          challenge_id: challenge.id,
+          selected_answer_id: index
+        })
+      })
+    } catch (err) {
+      console.error("Failed to submit answer:", err)
+    }
   }
 
   // handles highlighting red or greeen for answer

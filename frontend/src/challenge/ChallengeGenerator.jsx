@@ -45,8 +45,8 @@ export function ChallengeGenerator() {
   }
 
   const getNextResetTime = () => {
-    if (!quota?.last_reset_data) return null
-    const resetDate = new Date(quota.last_reset_data)
+    if (!quota?.last_reset_date) return null
+    const resetDate = new Date(quota.last_reset_date)
     resetDate.setHours(resetDate.getHours() + 24)
     return resetDate
   }
@@ -54,12 +54,16 @@ export function ChallengeGenerator() {
   return <div className="challenge-container">
     <h2>Coding Challenge</h2>
 
-    <div className="quota-display">
-      <p>Challenges remaining today: {quota?.quota_remaining || 0}</p>
-      {quota?.quota_remaining === 0 && (
-        <p>Next reset: {getNextResetTime()?.toLocaleString}</p>
-      )}
-    </div>
+    {quota && (
+      <div className="quota-display">
+        <p>Challenges remaining today: {quota.quota_remaining}</p>
+        {quota.last_reset_date ? (
+          <p>Next reset: {getNextResetTime()?.toLocaleString?.() ?? ""}</p>
+        ) : (
+          <p>Next reset: 24 hours after your first challenge today</p>
+        )}
+      </div>
+    )}
     <div className="difficulty-selector">
       <label htmlFor="difficulty">Select Difficulty</label>
       <select 
