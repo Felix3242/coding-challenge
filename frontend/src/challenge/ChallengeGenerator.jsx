@@ -1,6 +1,7 @@
 import 'react'
-import { useState } from 'react'
-import { MCQChallenge } from './MCQChallenge.jsx'   
+import {useState} from 'react'
+import {MCQChallenge} from './MCQChallenge.jsx'
+import {useApi} from '../utils/api.js' 
 
 export function ChallengeGenerator() {
   // some of these consts are just a base template, can add abunch of other states that i can adjust later
@@ -9,8 +10,20 @@ export function ChallengeGenerator() {
   const [error, setError] = useState(null)
   const [difficulty, setDifficulty] = useState('easy')
   const [quota, setQuota] = useState(null)
+  const {makeRequest} = useApi()
 
-  const fetchQuota = async () => {}
+  useEffect(() => {
+    fetchQuota()
+}, [])
+
+  const fetchQuota = async () => {
+    try {
+      const data = await makeRequest("quota")
+      setQuota(data)
+    } catch (err) {
+      console.log(err)
+    }
+  }
 
   const generateChallenge = async () => {}
 
