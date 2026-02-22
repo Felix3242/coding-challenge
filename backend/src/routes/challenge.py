@@ -25,16 +25,16 @@ class ChallengeRequest(BaseModel):
         json_schema_extra = {"example": {"difficulty": "easy"}}
 
 @router.post("/generate-challenge")
-async def generate_challenge(request: ChallengeRequest, db: Session = Depends(get_db)):
+async def generate_challenge(request: ChallengeRequest, request_obj: Request, db: Session = Depends(get_db)):
     try:
-        user_details = authenticate_and_get_user_details(request)
+        user_details = authenticate_and_get_user_details(request_obj)
         user_id = user_details.get("user_id")
         if not user_id or not isinstance(user_id, str):
             raise HTTPException(status_code=401, detail="Invalid token")
 
         quota = get_challenge_quota(db, user_id)
         if not quota:
-            create_challenge_quota(db, user_id)
+            quota = create_challenge_quota(db, user_id)
 
         quota = reset_quota_if_needed(db, quota)
 
@@ -47,7 +47,10 @@ async def generate_challenge(request: ChallengeRequest, db: Session = Depends(ge
             db=db,
             difficulty=request.difficulty,
             created_by=user_id,
-            **challenge_data
+            title=challenge_data["title"],
+            options=json.dumps(challenge_data["options"]),
+            correct_answer_id=challenge_data["correct_answer_id"],
+            explanation=challenge_data["explanation"]
         )
 
         setattr(quota, "quota_remaining", cast(int, quota.quota_remaining) - 1)

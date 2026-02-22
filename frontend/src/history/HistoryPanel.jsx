@@ -12,7 +12,17 @@ export function HistoryPanel() {
   },[])
 
   const fetchHistory = async () => {
-    setIsLoading(false)
+    setIsLoading(true)
+    setError(null)
+
+    try {
+      const data = await fetch("my-history")
+      setHistory(data.challenges)
+    } catch {
+      setError("Failed to load history")
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   if (isLoading) {

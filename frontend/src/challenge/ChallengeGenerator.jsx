@@ -1,5 +1,5 @@
 import 'react'
-import {useState} from 'react'
+import {useState, useEffect, useCallback} from 'react'
 import {MCQChallenge} from './MCQChallenge.jsx'
 import {useApi} from '../utils/api.js' 
 
@@ -12,18 +12,18 @@ export function ChallengeGenerator() {
   const [quota, setQuota] = useState(null)
   const {makeRequest} = useApi()
 
-  useEffect(() => {
-    fetchQuota()
-  }, [])
-
-  const fetchQuota = async () => {
+  const fetchQuota = useCallback(async () => {
     try {
         const data = await makeRequest("quota")
         setQuota(data)
     } catch (err) {
         console.log(err)
     }
-  }
+  }, [makeRequest])
+
+  useEffect(() => {
+    fetchQuota()
+  }, [fetchQuota])
 
   const generateChallenge = async () => {
     setIsLoading(true)
@@ -44,7 +44,12 @@ export function ChallengeGenerator() {
     }
   }
 
-  const getNextResetTime = () => {}
+  const getNextResetTime = () => {
+    if (!quota?.last_reset_data) return null
+    const resetDate = new Date(quota.last_reset_data)
+    resetDate.setHours(resetDate.getHours() + 24)
+    return resetDate
+  }
 
   return <div className="challenge-container">
     <h2>Coding Challenge</h2>
@@ -52,7 +57,7 @@ export function ChallengeGenerator() {
     <div className="quota-display">
       <p>Challenges remaining today: {quota?.quota_remaining || 0}</p>
       {quota?.quota_remaining === 0 && (
-        <p>Next reset: {0}</p>
+        <p>Next reset: {getNextResetTime()?.toLocaleString}</p>
       )}
     </div>
     <div className="difficulty-selector">
@@ -71,7 +76,7 @@ export function ChallengeGenerator() {
 
     <button
       onClick={generateChallenge}
-      disabled={isLoading || quota?.quota_remaining === 0}
+      disabled={false} //isLoading || quota?.quota_remaining === 0
       className="generate-button"
     >
       {isLoading ? "Generating..." : "Generate Challenge"}

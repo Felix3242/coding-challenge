@@ -29,15 +29,16 @@ export function MCQChallenge({challenge, showExplanation=false}) {
     return "option"
   }
   return <div className="challenge-display">
-    <p><strong>Difficulty</strong>{challenge.difficulty}</p>
+    <p><strong>Difficulty:</strong> {challenge.difficulty}</p>
     <p className="challenge-title">{challenge.title}</p>
     <div className="options">
       {options.map((option, index) => (
-        <div 
+        <div
           className={getOptionClass(index)}
           key={index}
           onClick={() => handleOptionSelect(index)}
         >
+          {option}
         </div>
       ))}
     </div>
