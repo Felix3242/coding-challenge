@@ -14,18 +14,35 @@ export function ChallengeGenerator() {
 
   useEffect(() => {
     fetchQuota()
-}, [])
+  }, [])
 
   const fetchQuota = async () => {
     try {
-      const data = await makeRequest("quota")
-      setQuota(data)
+        const data = await makeRequest("quota")
+        setQuota(data)
     } catch (err) {
-      console.log(err)
+        console.log(err)
     }
   }
 
-  const generateChallenge = async () => {}
+  const generateChallenge = async () => {
+    setIsLoading(true)
+    setError(null)
+
+    try {
+      const data = await makeRequest("generate-challenge", {
+        method: "POST",
+        body: JSON.stringify({difficulty})
+        }
+      )
+      setChallenge(data)
+      fetchQuota()
+    } catch (err) {
+      setError(err.message || "Failed to generate challenge.")
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   const getNextResetTime = () => {}
 
