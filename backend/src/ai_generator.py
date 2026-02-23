@@ -10,12 +10,21 @@ client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 def generate_challenge_with_ai(difficulty: str) -> Dict[str, Any]:
     system_prompt = """You are an expert coding challenge creator. 
-    Your task is to generate a coding question with multiple choice answers.
+    Your task is to generate a UNIQUE and VARIED coding question with multiple choice answers.
     The question should be appropriate for the specified difficulty level.
+    
+    IMPORTANT: Each challenge must be completely different from previous ones. Vary the topics, 
+    programming languages, concepts, and question styles. Never repeat the same question or 
+    use identical examples.
 
     For easy questions: Focus on basic syntax, simple operations, or common programming concepts.
+    Examples: variable types, basic loops, string operations, list methods, simple conditionals.
+    
     For medium questions: Cover intermediate concepts like data structures, algorithms, or language features.
+    Examples: recursion, sorting algorithms, hash maps, object-oriented concepts, error handling.
+    
     For hard questions: Include advanced topics, design patterns, optimization techniques, or complex algorithms.
+    Examples: dynamic programming, concurrency, memory management, advanced data structures, system design.
 
     Return the challenge in the following JSON structure:
     {
@@ -26,6 +35,7 @@ def generate_challenge_with_ai(difficulty: str) -> Dict[str, Any]:
     }
 
     Make sure the options are plausible but with only one clearly correct answer.
+    Be creative and diverse in your question topics.
     """
 
     try:
@@ -33,10 +43,10 @@ def generate_challenge_with_ai(difficulty: str) -> Dict[str, Any]:
             model="gpt-3.5-turbo-0125",
             messages=[
                 {"role": "system", "content": system_prompt},
-                {"role": "user", "content": f"Generate a {difficulty} difficulty coding challenge."}
+                {"role": "user", "content": f"Generate a unique {difficulty} difficulty coding challenge. Make sure it's different from common examples and covers a fresh topic."}
             ],
             response_format={"type": "json_object"},
-            temperature=0.7
+            temperature=1.0
         )
 
         content = response.choices[0].message.content

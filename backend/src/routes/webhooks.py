@@ -1,6 +1,4 @@
 from fastapi import APIRouter, Request, HTTPException, Depends
-from fastapi.utils import APIRoute
-from openai import webhook_secret
 from ..database.db import create_challenge_quota
 from ..database.models import get_db
 from svix.webhooks import Webhook

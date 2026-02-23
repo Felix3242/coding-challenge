@@ -24,7 +24,17 @@ class ChallengeQuota(Base):
     id = Column(Integer, primary_key=True)
     user_id = Column(String, nullable=False, unique=True)
     quota_remaining = Column(Integer, nullable=False, default=50)
-    last_reset_date = Column(DateTime, default=datetime.now)
+    last_reset_date = Column(DateTime, default=None, nullable=True)  # Set on first challenge of period; reset is 24h after this
+
+class UserAnswer(Base):
+    __tablename__ = 'user_answers'
+
+    id = Column(Integer, primary_key=True)
+    user_id = Column(String, nullable=False)
+    challenge_id = Column(Integer, nullable=False)
+    selected_answer_id = Column(Integer, nullable=False)
+    is_correct = Column(Integer, nullable=False)  # 0 or 1 for boolean
+    answered_at = Column(DateTime, default=datetime.now)
 
 Base.metadata.create_all(engine)
 
