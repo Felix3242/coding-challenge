@@ -10,6 +10,7 @@ from ..database.db import (
     reset_quota_if_needed,
     get_user_challenges,
     save_user_answer,
+    get_user_answer_stats,
 )
 from ..utils import authenticate_and_get_user_details
 from ..database.models import get_db
@@ -131,6 +132,14 @@ def _serialize_quota(quota):
         "quota_remaining": remaining,
         "last_reset_date": last_reset.isoformat() if last_reset else None
     }
+
+@router.get("/stats")
+async def get_stats(request: Request, db: Session = Depends(get_db)):
+    user_details = authenticate_and_get_user_details(request)
+    user_id = user_details.get("user_id")
+    if not user_id or not isinstance(user_id, str):
+        raise HTTPException(status_code=401, detail="Invalid token")
+    return get_user_answer_stats(db, user_id)
 
 @router.get("/quota")
 async def get_quota(request: Request, db: Session = Depends(get_db)):

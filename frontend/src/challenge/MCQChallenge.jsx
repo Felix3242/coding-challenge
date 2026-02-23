@@ -2,7 +2,7 @@ import 'react'
 import { useState, useEffect } from 'react'
 import { useApi } from '../utils/api'
 
-export function MCQChallenge({challenge, showExplanation=false}) {
+export function MCQChallenge({challenge, showExplanation=false, onAnswerSubmit}) {
   const [selectedOption, setSelectedOption] = useState(null)
   const [shouldShowExplanation, setShouldShowExplanation] = useState(showExplanation)
   const {makeRequest} = useApi()
@@ -31,6 +31,7 @@ export function MCQChallenge({challenge, showExplanation=false}) {
           selected_answer_id: index
         })
       })
+      onAnswerSubmit?.()
     } catch (err) {
       console.error("Failed to submit answer:", err)
     }

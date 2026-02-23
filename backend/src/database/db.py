@@ -64,3 +64,44 @@ def save_user_answer(db: Session, user_id: str, challenge_id: int, selected_answ
     db.refresh(db_answer)
     return db_answer
 
+def get_user_answer_stats(db: Session, user_id: str):
+    """Returns total_attempts, total_correct, total_incorrect, current_streak, best_streak, accuracy_pct."""
+    answers = (
+        db.query(models.UserAnswer)
+        .filter(models.UserAnswer.user_id == user_id)
+        .order_by(models.UserAnswer.answered_at.asc())
+        .all()
+    )
+    total = len(answers)
+    correct = sum(1 for a in answers if a.is_correct == 1)
+    incorrect = total - correct
+
+    # Best streak: max consecutive correct in chronological order
+    best_streak = 0
+    current_run = 0
+    for a in answers:
+        if a.is_correct == 1:
+            current_run += 1
+            best_streak = max(best_streak, current_run)
+        else:
+            current_run = 0
+
+    # Current streak: consecutive correct from the most recent answers (newest first)
+    current_streak = 0
+    for a in reversed(answers):
+        if a.is_correct == 1:
+            current_streak += 1
+        else:
+            break
+
+    accuracy_pct = round(100 * correct / total, 1) if total else 0.0
+
+    return {
+        "total_attempts": total,
+        "total_correct": correct,
+        "total_incorrect": incorrect,
+        "current_streak": current_streak,
+        "best_streak": best_streak,
+        "accuracy_pct": accuracy_pct,
+    }
+

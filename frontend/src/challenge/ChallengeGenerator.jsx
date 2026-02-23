@@ -10,6 +10,7 @@ export function ChallengeGenerator() {
   const [error, setError] = useState(null)
   const [difficulty, setDifficulty] = useState('easy')
   const [quota, setQuota] = useState(null)
+  const [stats, setStats] = useState(null)
   const {makeRequest} = useApi()
 
   const fetchQuota = useCallback(async () => {
@@ -21,9 +22,19 @@ export function ChallengeGenerator() {
     }
   }, [makeRequest])
 
+  const fetchStats = useCallback(async () => {
+    try {
+        const data = await makeRequest("stats")
+        setStats(data)
+    } catch (err) {
+        console.log(err)
+    }
+  }, [makeRequest])
+
   useEffect(() => {
     fetchQuota()
-  }, [fetchQuota])
+    fetchStats()
+  }, [fetchQuota, fetchStats])
 
   const generateChallenge = async () => {
     setIsLoading(true)
@@ -37,6 +48,7 @@ export function ChallengeGenerator() {
       )
       setChallenge(data)
       fetchQuota()
+      fetchStats()
     } catch (err) {
       setError(err.message || "Failed to generate challenge.")
     } finally {
@@ -54,13 +66,28 @@ export function ChallengeGenerator() {
   return <div className="challenge-container">
     <h2>Coding Challenge</h2>
 
-    {quota && (
-      <div className="quota-display">
-        <p>Challenges remaining today: {quota.quota_remaining}</p>
-        {quota.last_reset_date ? (
-          <p>Next reset: {getNextResetTime()?.toLocaleString?.() ?? ""}</p>
-        ) : (
-          <p>Next reset: 24 hours after your first challenge today</p>
+    {(quota || stats) && (
+      <div className="quota-and-stats">
+        {quota && (
+          <div className="quota-display">
+            <p>Challenges remaining today: {quota.quota_remaining}</p>
+            {quota.last_reset_date ? (
+              <p>Next reset: {getNextResetTime()?.toLocaleString?.() ?? ""}</p>
+            ) : (
+              <p>Next reset: 24 hours after your first challenge today</p>
+            )}
+          </div>
+        )}
+        {stats && (
+          <div className="stats-display">
+            <p className="stats-title">Your stats</p>
+            <p>Total attempts: <strong>{stats.total_attempts}</strong></p>
+            <p>Correct: <strong>{stats.total_correct}</strong> · Incorrect: <strong>{stats.total_incorrect}</strong></p>
+            <p>Accuracy: <strong>{stats.accuracy_pct}%</strong></p>
+            <p className="stats-streaks">
+              Current streak: <strong>{stats.current_streak}</strong> · Best streak: <strong>{stats.best_streak}</strong>
+            </p>
+          </div>
         )}
       </div>
     )}
@@ -90,6 +117,6 @@ export function ChallengeGenerator() {
       <p>{error}</p>
     </div>}
 
-    {challenge && <MCQChallenge challenge={challenge}/>}
+    {challenge && <MCQChallenge challenge={challenge} onAnswerSubmit={fetchStats} />}
   </div>
 }
