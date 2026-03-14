@@ -38,11 +38,9 @@ uv run server.py
 
 # Webhook tunnel (in separate terminal)
 ngrok http 8000
-```
-**Environment Variables**
 
+# Environment Variables
 Create `.env.local` in frontend and backend directories with:
-```
 VITE_CLERK_PUBLISHABLE_KEY=your_key
 CLERK_SECRET_KEY=your_secret
 OPENAI_API_KEY=your_key
